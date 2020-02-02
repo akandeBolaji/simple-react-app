@@ -1,0 +1,83 @@
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import 'firebase/auth';
+
+const firebaseConfig = {
+	apiKey: "AIzaSyBZK0en4gai8g9_qTxlPiOqF9HjN0YHr30",
+    authDomain: "simple-react-app-a1450.firebaseapp.com",
+    databaseURL: "https://simple-react-app-a1450.firebaseio.com",
+    projectId: "simple-react-app-a1450",
+    storageBucket: "simple-react-app-a1450.appspot.com",
+    messagingSenderId: "273776883980",
+    appId: "1:273776883980:web:cf636a949221f871c2b129"
+	// apiKey: 'AIzaSyBa2JJOBa3erbU_49rOlHF5PM8KDE1PfHk',
+	// authDomain: 'crwn-db-57198.firebaseapp.com',
+	// databaseURL: 'https://crwn-db-57198.firebaseio.com',
+	// projectId: 'crwn-db-57198',
+	// storageBucket: 'crwn-db-57198.appspot.com',
+	// messagingSenderId: '643389196095',
+	// appId: '1:643389196095:web:fe2227a33b9d454c16358a',
+};
+
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+	if (!userAuth) return;
+
+	const userRef = firestore.doc(`users/${userAuth.uid}`);
+	const snapShot = await userRef.get();
+	if (!snapShot.exists) {
+		const { displayName, email } = userAuth;
+		const createdAt = new Date();
+
+		try {
+			await userRef.set({
+				displayName,
+				email,
+				createdAt,
+				...additionalData,
+			});
+		} catch (err) {
+			console.log('error creating user');
+		}
+	}
+	return userRef;
+};
+export const updateUserProfileDocument = async (additionalData) => {
+	if (!additionalData) return;
+
+	const userRef = firestore.collection('users').doc(`${additionalData.id}`);
+
+	const { displayName, email } = additionalData;
+	const createdAt = new Date();
+
+	try {
+		await userRef.set({
+			displayName,
+			email,
+			createdAt,
+			...additionalData,
+		});
+	} catch (err) {
+		console.log('error updating user');
+	}
+
+	return userRef;
+};
+firebase.initializeApp(firebaseConfig);
+
+export const auth = firebase.auth();
+export const firestore = firebase.firestore();
+
+export const getCurrentUser = () => {
+	return new Promise((resolve, reject) => {
+		const unsubscribe = auth.onAuthStateChanged((userAuth) => {
+			unsubscribe();
+			resolve(userAuth);
+		}, reject);
+	});
+};
+export const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
+
+export default firebase;

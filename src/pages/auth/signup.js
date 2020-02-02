@@ -1,0 +1,216 @@
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import styled from 'styled-components';
+import { Link } from 'react-router-dom';
+import FormInput from '../../components/input';
+import { signUpStart } from '../../redux/user/actions';
+import Button from '../../components/button';
+import { cloudinary } from 'cloudinary-react';
+
+const Register = ({ onsignupStart }) => {
+	const [users, setUser] = useState({
+		displayName: '',
+		email: '',
+		dob: '',
+		address: '',
+		photo:
+			'https://f0.pngfuel.com/png/980/886/male-portrait-avatar-png-clip-art.png',
+		password: '',
+		confirmPassword: '',
+		security1: '',
+		security2: '',
+		security3: ''
+	});
+	const handleOnChange = (e) => {
+		const { value, name } = e.target;
+		setUser({ ...users, [name]: value });
+	};
+
+	const handlePicture = (e) => {
+		console.log(e.target.value);
+		//upload to cloudinary
+		//get url back from cloudinary
+		//set url to users.photo
+		//const { value, name } = e.target;
+		//setUser({ ...users, [name]: value });
+	};
+
+	const uploadWidget = () => {
+    cloudinary.openUploadWidget({ cloud_name: 'dgwxi9sbq', upload_preset: 'preset', tags:['xmas']},
+        function(error, result) {
+            console.log(result);
+        });
+	}
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		const {
+			displayName,
+			email,
+			password,
+			confirmPassword,
+			dob,
+			address,
+			photo,
+			security1,
+			security2,
+			security3,
+		} = users;
+
+		if (password !== confirmPassword) {
+			alert('passwords don"t match');
+			return;
+		}
+		try {
+			onsignupStart(displayName, email, password, dob, address, photo, security1, security2, security3);
+			// setUser({
+			// 	displayName: '',
+			// 	email: '',
+			// 	password: '',
+			// 	dob: '',
+			// 	address: '',
+			// 	confirmPassword: '',
+			// });
+		} catch (err) {
+			console.error(err);
+		}
+	};
+	return (
+		<Wrapper className="container d-block d-md-flex">
+			<span>
+				<h3 className="text-left mt-5 mt-md-0 mb-4 ">
+					Sign up with your email and password
+				</h3>
+				<div className="row justify-content-center">
+					<div className="col-md-12">
+						<div className="card">
+							<div className="card-body p-0">
+								<form
+									className="sign-up-form"
+									onSubmit={(e) => handleSubmit(e)}
+								>
+									<FormInput
+										type="text"
+										name="displayName"
+										value={users.displayName}
+										onChange={(e) => handleOnChange(e)}
+										label="Full Name"
+										required
+									/>
+									<FormInput
+										type="email"
+										name="email"
+										value={users.email}
+										onChange={(e) => handleOnChange(e)}
+										label="Email"
+										required
+									/>
+									<FormInput
+										type="date"
+										name="dob"
+										value={users.dob}
+										onChange={(e) => handleOnChange(e)}
+										label="Date of birth"
+										required
+									/>
+									<FormInput
+										type="text"
+										name="address"
+										value={users.address}
+										onChange={(e) => handleOnChange(e)}
+										label="Address"
+										required
+									/>
+									<FormInput
+										type="password"
+										name="password"
+										value={users.password}
+										onChange={(e) => handleOnChange(e)}
+										label="Password"
+										required
+									/>
+									<FormInput
+										type="password"
+										name="confirmPassword"
+										value={users.confirmPassword}
+										onChange={(e) => handleOnChange(e)}
+										label="Confirm Password"
+										required
+									/>
+									<p style={{marginTop: '2em'}}>Security Questions</p>
+									<FormInput
+										type="text"
+										name="security1"
+										value={users.security1}
+										onChange={(e) => handleOnChange(e)}
+										label="What is your mother's maiden name?"
+										required
+									/>
+									<FormInput
+										type="text"
+										name="security2"
+										value={users.security2}
+										onChange={(e) => handleOnChange(e)}
+										label="What is your lucky number?"
+										required
+									/>
+									<FormInput
+										type="text"
+										name="security3"
+										value={users.security3}
+										onChange={(e) => handleOnChange(e)}
+										label="What is your best book ?"
+										required
+									/>
+									<p style={{marginTop: '2em'}}>Set Display Picture</p>
+									<div className="group">
+										<label htmlFor="display" className="btn btn-info">Display Picture</label>
+										<input id="display" type="file" style={{display: 'none'}} className="form-control" onChange={(e) => handlePicture(e)} />
+									</div>
+									<button onClick={(e) => uploadWidget(e)} className="upload-button">
+										Add Image
+									</button>
+									<Button type="submit">Sign Up</Button>
+								</form>
+							</div>
+						</div>
+						<Link to="/login" className="d-block mt-4">
+							Already Have An Account ?
+						</Link>
+					</div>
+				</div>
+			</span>
+		</Wrapper>
+	);
+};
+const mapDispatchToProps = (dispatch) => ({
+	onsignupStart: (displayName, email, password, dob, address, photo, security1, security2, security3) =>
+		dispatch(
+			signUpStart({ displayName, email, password, dob, address, photo, security1, security2, security3 })
+		),
+});
+
+const Wrapper = styled.div`
+	min-height: 80vh;
+	background: #fff;
+	align-items: center;
+	justify-content: center;
+	h2 {
+		font-weight: 300;
+	}
+	.card {
+		border: none;
+		box-shadow: none;
+		background: #ffffff;
+		padding: 0px 0px;
+	}
+	button {
+		padding: 14px 39px;
+		border: none;
+		border-radius: 50px;
+		background: #1f88e5;
+		margin-right: 19px;
+		margin-top: 2rem;
+	}
+`;
+export default connect(null, mapDispatchToProps)(Register);
