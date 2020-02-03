@@ -90,7 +90,8 @@ export function* signUp({
 			})
 		);
 		yield alert('Created New Account Successfully');
-		history.push('/profile');
+		yield history.push('/profile');
+		yield history.go();
 	} catch (error) {
 		yield put(signUpFailure(error));
 	}

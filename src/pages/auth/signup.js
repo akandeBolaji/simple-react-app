@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import FormInput from '../../components/input';
 import { signUpStart } from '../../redux/user/actions';
 import Button from '../../components/button';
-import { cloudinary } from 'cloudinary-react';
+import axios from 'axios';
 
 const Register = ({ onsignupStart }) => {
 	const [users, setUser] = useState({
@@ -13,8 +13,7 @@ const Register = ({ onsignupStart }) => {
 		email: '',
 		dob: '',
 		address: '',
-		photo:
-			'https://f0.pngfuel.com/png/980/886/male-portrait-avatar-png-clip-art.png',
+		photo: '',
 		password: '',
 		confirmPassword: '',
 		security1: '',
@@ -23,24 +22,40 @@ const Register = ({ onsignupStart }) => {
 	});
 	const handleOnChange = (e) => {
 		const { value, name } = e.target;
-		setUser({ ...users, [name]: value });
+		setUser({ ...users, [name]: value })
 	};
+
+	const [uploading, setUpload] = useState({
+		status: null
+	})
+
+	//let uploading = null;
 
 	const handlePicture = (e) => {
-		console.log(e.target.value);
-		//upload to cloudinary
-		//get url back from cloudinary
-		//set url to users.photo
-		//const { value, name } = e.target;
-		//setUser({ ...users, [name]: value });
+		setUpload({status: "Uploading image ...."});
+		console.log(uploading);
+		let file = (e.target.files[0]);
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append("tags", `codeinfuse, medium, gist`);
+		formData.append("upload_preset", "ml_default"); // Replace the preset name with your own
+		formData.append("api_key", "559579712395136"); // Replace API key with your own Cloudinary key
+		formData.append("timestamp", (Date.now() / 1000) | 0);
+		
+		// Make an AJAX upload request using Axios (replace Cloudinary URL below with your own)
+		
+		return axios.post("https://api.cloudinary.com/v1_1/dgwxi9sbq/image/upload", formData, {
+		  headers: { "X-Requested-With": "XMLHttpRequest" },
+		}).then(response => {
+			setUpload({status: "Upload Successful"});
+			console.log(response.data);
+		  const photo = response.data.secure_url;
+		  setUser({ ...users, photo: photo });
+		  console.log(users);
+		 
+		})
 	};
 
-	const uploadWidget = () => {
-    cloudinary.openUploadWidget({ cloud_name: 'dgwxi9sbq', upload_preset: 'preset', tags:['xmas']},
-        function(error, result) {
-            console.log(result);
-        });
-	}
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -124,6 +139,7 @@ const Register = ({ onsignupStart }) => {
 									<FormInput
 										type="password"
 										name="password"
+										minLength="6"
 										value={users.password}
 										onChange={(e) => handleOnChange(e)}
 										label="Password"
@@ -132,6 +148,7 @@ const Register = ({ onsignupStart }) => {
 									<FormInput
 										type="password"
 										name="confirmPassword"
+										minLength="6"
 										value={users.confirmPassword}
 										onChange={(e) => handleOnChange(e)}
 										label="Confirm Password"
@@ -167,9 +184,7 @@ const Register = ({ onsignupStart }) => {
 										<label htmlFor="display" className="btn btn-info">Display Picture</label>
 										<input id="display" type="file" style={{display: 'none'}} className="form-control" onChange={(e) => handlePicture(e)} />
 									</div>
-									<button onClick={(e) => uploadWidget(e)} className="upload-button">
-										Add Image
-									</button>
+									{uploading.status && <div className='group'>{uploading.status}</div>}
 									<Button type="submit">Sign Up</Button>
 								</form>
 							</div>

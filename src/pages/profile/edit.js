@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import FormInput from '../../components/input';
 import { editStart } from '../../redux/user/actions';
 import Button from '../../components/button';
+import axios from 'axios';
 
 const EditProfile = ({ oneditStart, user, closeModal }) => {
 	const [users, setUser] = useState({
@@ -20,6 +21,37 @@ const EditProfile = ({ oneditStart, user, closeModal }) => {
 		const { value, name } = e.target;
 		setUser({ ...users, [name]: value });
 	};
+
+	const [uploading, setUpload] = useState({
+		status: null
+	})
+
+
+	const handlePicture = (e) => {
+		setUpload({status: "Uploading image ...."});
+		console.log(uploading);
+		let file = (e.target.files[0]);
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append("tags", `codeinfuse, medium, gist`);
+		formData.append("upload_preset", "ml_default"); // Replace the preset name with your own
+		formData.append("api_key", "559579712395136"); // Replace API key with your own Cloudinary key
+		formData.append("timestamp", (Date.now() / 1000) | 0);
+		
+		// Make an AJAX upload request using Axios (replace Cloudinary URL below with your own)
+		
+		return axios.post("https://api.cloudinary.com/v1_1/dgwxi9sbq/image/upload", formData, {
+		  headers: { "X-Requested-With": "XMLHttpRequest" },
+		}).then(response => {
+			setUpload({status: "Upload Successful"});
+			console.log(response.data);
+		  const photo = response.data.secure_url;
+		  setUser({ ...users, photo: photo });
+		  console.log(users);
+		 
+		})
+	};
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const {
@@ -109,7 +141,7 @@ const EditProfile = ({ oneditStart, user, closeModal }) => {
 										name="security1"
 										value={users.security1}
 										onChange={(e) => handleOnChange(e)}
-										label="What is your pet name?"
+										label="What is your mother's maiden name?"
 										required
 									/>
 									<FormInput
@@ -117,7 +149,7 @@ const EditProfile = ({ oneditStart, user, closeModal }) => {
 										name="security2"
 										value={users.security2}
 										onChange={(e) => handleOnChange(e)}
-										label="What is your nick name?"
+										label="What is your lucky number?"
 										required
 									/>
 									<FormInput
@@ -128,6 +160,13 @@ const EditProfile = ({ oneditStart, user, closeModal }) => {
 										label="What is your best book ?"
 										required
 									/>
+
+									<p style={{marginTop: '2em'}}>Edit Display Picture</p>
+									<div className="group">
+										<label htmlFor="display" className="btn btn-info">Display Picture</label>
+										<input id="display" type="file" style={{display: 'none'}} className="form-control" onChange={(e) => handlePicture(e)} />
+									</div>
+
 									<Button type="submit">Edit Profile</Button>
 								</form>
 							</div>
